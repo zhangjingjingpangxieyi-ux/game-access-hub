@@ -6,6 +6,7 @@ import ProjectDetail from './pages/ProjectDetail'
 import EditProject from './pages/EditProject'
 import Admin from './pages/Admin'
 import DocCenter from './pages/DocCenter'
+import UserGuide from './components/UserGuide'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/project/:id/edit" element={<EditProject />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/docs" element={<DocCenter />} />
+        <Route path="/guide" element={<UserGuide />} />
       </Routes>
     </Layout>
   )

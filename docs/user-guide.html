@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>运营后台接入工作台 - 使用指南</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Noto Sans SC', 'Inter', sans-serif; }
+    body { background: #f8fafc; }
+
+    .mock-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 56px;
+      border-radius: 12px 12px 0 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+    }
+    .mock-header .dots { display: flex; gap: 6px; }
+    .mock-header .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .mock-header .dot-red { background: #ff5f57; }
+    .mock-header .dot-yellow { background: #febc2e; }
+    .mock-header .dot-green { background: #28c840; }
+    .mock-header .title { color: white; font-size: 13px; font-weight: 500; margin-left: 8px; }
+
+    .mock-nav {
+      background: #1e293b;
+      width: 200px;
+      border-radius: 0 0 0 12px;
+      padding: 12px 0;
+      min-height: 280px;
+    }
+    .mock-nav-item { padding: 8px 16px; color: #94a3b8; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .mock-nav-item.active { background: rgba(99,102,241,0.2); color: white; border-left: 2px solid #818cf8; }
+
+    .mock-content { flex: 1; background: white; border-radius: 0 12px 12px 0; padding: 20px; }
+
+    .mock-browser { box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06); border-radius: 12px; overflow: hidden; display: flex; }
+    .mock-browser .mock-nav + .mock-content { border-radius: 0 12px 12px 0; }
+
+    .phone-mock {
+      background: #1e293b;
+      border-radius: 24px;
+      padding: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+      max-width: 280px;
+    }
+    .phone-mock .screen {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .phone-notch {
+      width: 80px;
+      height: 24px;
+      background: #1e293b;
+      border-radius: 0 0 12px 12px;
+      margin: 0 auto;
+    }
+
+    .guide-section { scroll-margin-top: 80px; }
+    .guide-section h2 { font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+    .guide-section .desc { color: #64748b; font-size: 15px; margin-bottom: 32px; }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .highlight-box {
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      border: 1px solid #c7d2fe;
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+
+    .flow-arrow { color: #94a3b8; font-size: 24px; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .tag-green { background: #dcfce7; color: #166534; }
+    .tag-blue { background: #dbeafe; color: #1e40af; }
+    .tag-amber { background: #fef3c7; color: #92400e; }
+    .tag-purple { background: #f3e8ff; color: #7e22ce; }
+
+    .kanban-col {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 12px;
+      min-width: 140px;
+    }
+    .kanban-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .toc-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #475569;
+      font-size: 14px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .toc-item:hover { background: #f1f5f9; color: #1e293b; }
+    .toc-item.active { background: #eef2ff; color: #4f46e5; font-weight: 500; }
+    .toc-num { width: 24px; height: 24px; border-radius: 6px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+    .toc-item.active .toc-num { background: #4f46e5; color: white; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .guide-section { animation: fadeInUp 0.5s ease-out; }
+
+    .scroll-hint {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #92400e;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<nav class="sticky top-0 z-50 bg-white border-b border-gray-200">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+        <span class="text-white text-sm">⚡</span>
+      </div>
+      <span class="font-bold text-gray-900">运营后台接入工作台</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-sm text-gray-500">使用指南</span>
+      <a href="https://39272ccc.game-access-hub.pages.dev" target="_blank" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        打开系统 →
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="max-w-6xl mx-auto px-6 py-10">
+  <!-- 封面 -->
+  <div class="text-center mb-16">
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-sm font-medium mb-6">
+      <span>📖 新手入门</span>
+    </div>
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">运营后台接入工作台<br>使用指南</h1>
+    <p class="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+      本指南面向准备接入运营后台的游戏项目团队，帮助你快速了解如何创建项目、选择功能、追踪接入进度。
+    </p>
+    <div class="flex items-center justify-center gap-3 mt-8">
+      <span class="text-sm text-gray-400">预计阅读时间</span>
+      <span class="text-sm font-medium text-gray-600">约 5 分钟</span>
+    </div>
+  </div>
+
+  <!-- 目录 -->
+  <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-10">
+    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">目录</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <a href="#step1" class="toc-item"><span class="toc-num">1</span> 认识工作台首页</a>
+      <a href="#step2" class="toc-item"><span class="toc-num">2</span> 新建接入项目</a>
+      <a href="#step3" class="toc-item"><span class="toc-num">3</span> 选择接入阶段</a>
+      <a href="#step4" class="toc-item"><span class="toc-num">4</span> 选择所需功能</a>
+      <a href="#step5" class="toc-item"><span class="toc-num">5</span> 查看项目详情</a>
+      <a href="#step6" class="toc-item"><span class="toc-num">6</span> 接入流程追踪</a>
+      <a href="#step7" class="toc-item"><span class="toc-num">7</span> 功能开发看板</a>
+      <a href="#step8" class="toc-item"><span class="toc-num">8</span> 常见问题</a>
+    </div>
+  </div>
+
+  <!-- 步骤1：认识首页 -->
+  <div id="step1" class="guide-section mb-20">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="step-badge">1</span>
+      <h2>认识工作台首页</h2>
+    </div>
+    <p class="desc">登录系统后，你首先看到的是项目管理首页。这里展示了所有接入项目的整体状态。</p>
+
+    <div class="mock-browser mb-6">
+      <div class="mock-header">
+        <div class="dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <span class="title">https://game-access-hub.pages.dev</span>
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav-item active">📋 项目管理</div>
+        <div class="mock-nav-item">📁 文档中心</div>
+        <div class="mock-nav-item">🛠 后台管理</div>
+      </div>
+      <div class="mock-content">
+        <!-- 统计卡片 -->
+        <div class="flex gap-3 mb-5">
+          <div class="flex-1 bg-gray-50 rounded-lg p-4 border border-gray-100">
+            <div class="text-2xl font-bold text-gray-900">8</div>
+            <div class="text-xs text-gray-400 mt-1">全部项目</div>
+          </div>
+          <div class="flex-1 bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <div class="text-2xl font-bold text-blue-600">5</div>
+            <div class="text-xs text-gray-400 mt-1">接入中</div>
+          </div>
+          <div class="flex-1 bg-green-50 rounded-lg p-4 border border-green-100">
+            <div class="text-2xl font-bold text-green-600">3</div>
+            <div class="text-xs text-gray-400 mt-1">已完成</div>
+          </div>
+        </div>
+        <!-- 搜索栏 -->
+        <div class="bg-gray-50 rounded-lg px-3 py-2.5 mb-4 flex items-center gap-2">
+          <span class="text-gray-400 text-sm">🔍</span>
+          <span class="text-gray-400 text-sm">搜索游戏名称 / ID…</span>
+        </div>
+        <!-- 表格 -->
+        <div class="text-xs text-gray-400 mb-2 uppercase tracking-wide">游戏项目</div>
+        <div class="space-y-2">
+          <div class="flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-lg">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500"></div>
+            <div class="flex-1">
+              <div class="font-medium text-sm text-gray-900">王者荣耀</div>
+              <div class="text-xs text-gray-400">G001 · 自研 · 天美工作室</div>
+            </div>
+            <span class="tag tag-blue">阶段1</span>
+            <div class="w-24 h-2 bg-gray-100 rounded-full"><div class="w-3/4 h-full bg-indigo-500 rounded-full"></div></div>
+            <span class="text-xs text-gray-500">75%</span>
+            <span class="tag tag-green">已完成</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-lg">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500"></div>
+            <div class="flex-1">
+              <div class="font-medium text-sm text-gray-900">和平精英</div>
+              <div class="text-xs text-gray-400">G002 · 自研 · 光子工作室</div>
+            </div>
+            <span class="tag tag-amber">阶段2</span>
+            <div class="w-24 h-2 bg-gray-100 rounded-full"><div class="w-1/2 h-full bg-indigo-500 rounded-full"></div></div>
+            <span class="text-xs text-gray-500">50%</span>
+            <span class="tag tag-blue">接入中</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4">
+      <div class="highlight-box">
+        <div class="text-sm font-bold text-indigo-700 mb-1">📊 统计卡片</div>
+        <div class="text-sm text-gray-600">顶部展示全部项目数、接入中数量、已完成数量，点击可快速筛选</div>
+      </div>
+      <div class="highlight-box">
+        <div class="text-sm font-bold text-indigo-700 mb-1">🔍 搜索过滤</div>
+        <div class="text-sm text-gray-600">支持按游戏名称或游戏ID搜索，快速定位目标项目</div>
+      </div>
+      <div class="highlight-box">
+        <div class="text-sm font-bold text-indigo-700 mb-1">📋 项目列表</div>
+        <div class="text-sm text-gray-600">每个项目显示阶段、进度百分比、负责人信息，可点击进入详情</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤2：新建项目 -->
+  <div id="step2" class="guide-section mb-20">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="step-badge">2</span>
+      <h2>新建接入项目</h2>
+    </div>
+    <p class="desc">点击首页右上角「新建项目」按钮，填写游戏基本信息，开始接入流程。</p>
+
+    <div class="mock-browser mb-6">
+      <div class="mock-header">
+        <div class="dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <span class="title">新建游戏接入项目</span>
+      </div>
+      <div class="mock-content" style="padding: 24px;">
+        <!-- 步骤条 -->
+        <div class="flex items-center gap-2 mb-6">
+          <div class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">
+            <span class="w-5 h-5 rounded-full bg-white text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
+            项目建档
+          </div>
+          <span class="text-gray-300">›</span>
+          <div class="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium">
+            <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">2</span>
+            选择阶段与功能
+          </div>
+        </div>
+
+        <!-- 基本信息卡片 -->
+        <div class="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+          <div class="text-sm font-bold text-gray-800 mb-4">📋 基本信息</div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <div class="text-xs text-gray-400 mb-1.5">游戏名称 <span class="text-red-500">*</span></div>
+              <div class="bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm">英雄联盟手游</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400 mb-1.5">游戏ID <span class="text-red-500">*</span></div>
+              <div class="bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm">G003</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400 mb-1.5">接入环境 <span class="text-red-500">*</span></div>
+              <div class="flex gap-2">
+                <div class="px-3 py-1.5 border-2 border-indigo-500 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-medium">✓ 正式版本</div>
+                <div class="px-3 py-1.5 border border-gray-300 text-gray-500 rounded-lg text-xs">版署版本</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 阶段选择 -->
+        <div class="bg-white border border-gray-200 rounded-xl p-5">
+          <div class="text-sm font-bold text-gray-800 mb-4">🎯 选择接入阶段</div>
+          <div class="grid grid-cols-4 gap-3">
+            <div class="border-2 border-indigo-500 bg-indigo-50 rounded-xl p-4 relative">
+              <div class="absolute top-2 right-2 w-4 h-4 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>
+              <div class="text-xs font-bold text-gray-400 mb-1">阶段 0</div>
+              <div class="text-sm font-bold mb-1">超轻量接入包</div>
+              <div class="text-xs text-green-600 font-medium">⏱ 0.5h</div>
+            </div>
+            <div class="border border-gray-200 rounded-xl p-4 opacity-50">
+              <div class="text-xs font-bold text-gray-400 mb-1">阶段 1</div>
+              <div class="text-sm font-bold mb-1">基础接入包</div>
+              <div class="text-xs text-blue-600 font-medium">⏱ 3–7天</div>
+            </div>
+            <div class="border border-gray-200 rounded-xl p-4 opacity-50">
+              <div class="text-xs font-bold text-gray-400 mb-1">阶段 2</div>
+              <div class="text-sm font-bold mb-1">升级接入包</div>
+              <div class="text-xs text-amber-600 font-medium">⏱ 7–14天</div>
+            </div>
+            <div class="border border-gray-200 rounded-xl p-4 opacity-50">
+              <div class="text-xs font-bold text-gray-400 mb-1">阶段 3</div>
+              <div class="text-sm font-bold mb-1">深度开发包</div>
+              <div class="text-xs text-purple-600 font-medium">⏱ 7–14天</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-6">
+          <div class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium">创建项目</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-5">
+      <div class="flex items-start gap-3">
+        <span class="text-xl">💡</span>
+        <div>
+          <div class="text-sm font-bold text-amber-800 mb-1">温馨提示</div>
+          <div class="text-sm text-amber-700">接入阶段不是一成不变的！可以在项目详情页随时调整阶段。阶段越高，功能越丰富，但开发工作量也越大。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤3：选择阶段 -->
+  <div id="step3" class="guide-section mb-20">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="step-badge">3</span>
+      <h2>了解四个接入阶段</h2>
+    </div>
+    <p class="desc">根据项目的实际需求和当前状态，选择合适的接入阶段。每个阶段都有明确的定位。</p>
+
+    <div class="grid grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center font-bold">0</span>
+          <span class="tag tag-green">最简单</span>
+        </div>
+        <div class="text-sm font-bold text-gray-900 mb-1">超轻量接入包</div>
+        <div class="text-xs text-green-600 font-medium mb-2">⏱ 约 0.5 小时</div>
+        <div class="text-xs text-gray-500 leading-relaxed">无需游戏侧介入，平台开通权限即可用。适合新项目首轮验证期。</div>
+        <div class="mt-3 pt-3 border-t border-gray-100">
+          <div class="text-xs text-gray-400">适合场景</div>
+          <div class="text-xs text-gray-600 mt-1">快速上线、数据验证</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-blue-200 p-5 relative">
+        <div class="flex items-center justify-between mb-3">
+          <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">1</span>
+          <span class="tag tag-blue">推荐</span>
+        </div>
+        <div class="text-sm font-bold text-gray-900 mb-1">基础接入包</div>
+        <div class="text-xs text-blue-600 font-medium mb-2">⏱ 3–7 天</div>
+        <div class="text-xs text-gray-500 leading-relaxed">按文档开发，几乎无需定制。适合有数据基础的项目推广期或换皮项目。</div>
+        <div class="mt-3 pt-3 border-t border-gray-100">
+          <div class="text-xs text-gray-400">适合场景</div>
+          <div class="text-xs text-gray-600 mt-1">常规运营需求</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-amber-200 p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold">2</span>
+          <span class="tag tag-amber">进阶</span>
+        </div>
+        <div class="text-sm font-bold text-gray-900 mb-1">升级接入包</div>
+        <div class="text-xs text-amber-600 font-medium mb-2">⏱ 7–14 天</div>
+        <div class="text-xs text-gray-500 leading-relaxed">小部分需配合定制。适合稳定运营期、战略级项目。</div>
+        <div class="mt-3 pt-3 border-t border-gray-100">
+          <div class="text-xs text-gray-400">适合场景</div>
+          <div class="text-xs text-gray-600 mt-1">深度定制、大DAU游戏</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-purple-200 p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-bold">3</span>
+          <span class="tag tag-purple">深度</span>
+        </div>
+        <div class="text-sm font-bold text-gray-900 mb-1">深度开发包</div>
+        <div class="text-xs text-purple-600 font-medium mb-2">⏱ 7–14 天</div>
+        <div class="text-xs text-gray-500 leading-relaxed">纯定制，需深度协作联合评审。适合长期核心头部产品。</div>
+        <div class="mt-3 pt-3 border-t border-gray-100">
+          <div class="text-xs text-gray-400">适合场景</div>
+          <div class="text-xs text-gray-600 mt-1">头部产品、深度集成</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤4：选择功能 -->
+  <div id="step4" class="guide-section mb-20">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="step-badge">4</span>
+      <h2>选择所需功能</h2>
+    </div>
+    <p class="desc">根据选择的阶段，系统会推荐相应的功能。你也可以跨阶段选择更多功能，或添加自定义功能。</p>
+
+    <div class="mock-browser mb-6">
+      <div class="mock-header">
+        <div class="dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <span class="title">选择阶段与功能</span>
+      </div>
+      <div class="mock-content" style="padding: 20px;">
+        <div class="text-sm font-bold text-gray-800 mb-3">✅ 功能选择 <span class="text-gray-400 font-normal">已选 5 个功能</span></div>
+
+        <!-- 阶段1功能组 -->
+        <div class="mb-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tag tag-blue">阶段1 · 基础接入包</span>
+            <span class="text-xs text-gray-400">（已包含，不可取消）</span>
+          </div>
+          <div class="bg-blue-50 border border-blue-100 rounded-lg overflow-hidden">
+            <div class="grid grid-cols-12 gap-2 px-4 py-2 bg-blue-100/50 text-xs text-gray-500 font-medium">
+              <span></span><span>功能名称</span><span>所属模块</span><span>推荐等级</span><span>功能类型</span><span>接入方式</span><span>工期</span>
+            </div>
+            <div class="grid grid-cols-12 gap-2 px-4 py-3 items-center border-b border-blue-100">
+              <div class="w-4 h-4 rounded bg-green-500 flex items-center justify-center text-white text-xs">✓</div>
+              <div class="text-sm font-semibold">数据分析平台</div>
+              <div class="text-xs text-gray-400">数据平台</div>
+              <span class="tag tag-green">必须使用</span>
+              <span class="tag tag-blue">通用</span>
+              <span class="text-xs">开通权限</span>
+              <span class="text-xs text-green-600">0.5h</span>
+            </div>
+            <div class="grid grid-cols-12 gap-2 px-4 py-3 items-center border-b border-blue-100">
+              <div class="w-4 h-4 rounded bg-green-500 flex items-center justify-center text-white text-xs">✓</div>
+              <div class="text-sm font-semibold">运营活动管理</div>
+              <div class="text-xs text-gray-400">运营工具</div>
+              <span class="tag tag-green">必须使用</span>
+              <span class="tag tag-blue">通用</span>
+              <span class="text-xs">开通权限</span>
+              <span class="text-xs text-green-600">0.5h</span>
+            </div>
+            <div class="grid grid-cols-12 gap-2 px-4 py-3 items-center">
+              <div class="w-4 h-4 rounded border-2 border-gray-300"></div>
+              <div class="text-sm font-semibold">礼包码系统</div>
+              <div class="text-xs text-gray-400">运营工具</div>
+              <span class="tag tag-amber">推荐使用</span>
+              <span class="tag tag-blue">通用</span>
+              <span class="text-xs">开通权限</span>
+              <span class="text-xs text-green-600">0.5h</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 跨阶段功能 -->
+        <div class="mb-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tag tag-amber">阶段2 · 升级接入包</span>
+            <span class="text-xs text-gray-400">（跨阶段可选）</span>
+          </div>
+          <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm text-gray-600">
+            ＋ 已支持跨阶段选择所有功能
+          </div>
+        </div>
+
+        <!-- 自定义功能 -->
+        <div class="bg-indigo-50 border border-dashed border-indigo-200 rounded-lg p-3 text-sm text-indigo-600">
+          ✨ 添加自定义功能（功能库中不存在的新功能）
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="highlight-box">
+        <div class="text-sm font-bold text-indigo-700 mb-2">🎯 必须使用 vs 推荐使用</div>
+        <div class="text-sm text-gray-600 space-y-1">
+          <p><span class="tag tag-green mr-2">必须使用</span>是平台核心功能，勾选后不可取消</p>
+          <p><span class="tag tag-amber mr-2">推荐使用</span>是平台推荐功能，可以根据项目需求选择</p>
+        </div>
+      </div>
+      <div class="highlight-box">
+        <div class="text-sm font-bold text-indigo-700 mb-2">✨ 自定义功能</div>
+        <div class="text-sm text-gray-600">如果标准功能库中没有你需要的功能，可以点击「添加自定义功能」，创建一个项目特有的功能项。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤5：项目详情 -->
+  <div id="step5" class="guide-section mb-20">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="step-badge">5</span>
+      <h2>查看项目详情</h2>
+    </div>
+    <p class="desc">创建项目后，点击项目卡片进入详情页，可以看到完整的接入总览和所有功能状态。</p>
+
+    <div class="mock-browser mb-6">
+      <div class="mock-header">
+        <div class="dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <span class="title">项目管理 › 英雄联盟手游</span>
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav-item">📋 项目管理</div>
+        <div class="mock-nav-item active">🎯 英雄联盟手游</div>
+        <div class="mock-nav-item">📁 文档中心</div>
+        <div class="mock-nav-item">🛠 后台管理</div>
+      </div>
+      <div class="mock-content" style="padding: 20px;">
+        <!-- 标题栏 -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <h3 class="text-base font-bold text-gray-900">英雄联盟手游</h3>
+            <span class="tag tag-blue">阶段1</span>
+            <span class="flex items-center gap-1.5 text-sm text-gray-500">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> 接入中
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <div class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs text-gray-600">管理后台</div>
+            <div class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium">编辑项目</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-5">
+          <!-- 项目信息 -->
+          <div class="bg-white border border-gray-200 rounded-xl p-4">
+            <div class="text-xs font-bold text-gray-400 uppercase mb-3">项目信息</div>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between"><span class="text-gray-400">游戏ID</span><span class="font-medium">G003</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">发行地区</span><span class="font-medium">国内</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">业务类型</span><span class="font-medium">自研</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">负责人</span><span class="font-medium">张三</span></div>
+            </div>
+          </div>
+          <!-- 接入进度 -->
+          <div class="bg-white border border-gray-200 rounded-xl p-4">
+            <div class="text-xs font-bold text-gray-400 uppercase mb-3">接入进度</div>
+            <div class="text-lg font-bold text-indigo-600 mb-2">60%（3/5）</div>
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+              <div class="h-full bg-indigo-500 rounded-full" style="width: 60%"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="text-center bg-gray-50 rounded py-1.5">
+                <div class="font-bold text-green-500">1</div>
+                <div class="text-gray-400">已通过</div>
+              </div>
+              <div class="text-center bg-gray-50 rounded py-1.5">
+                <div class="font-bold text-blue-500">2</div>
+                <div class="text-gray-400">进行中</div>
+              </div>
+            </div>
+          </div>
+          <!-- 时间线 -->
+          <div class="bg-white border border-gray-200 rounded-xl p-4">
+            <div class="text-xs font-bold text-gray-400 uppercase mb-3">接入时间线</div>
+            <div class="space-y-2">
+              <div class="flex gap-2 text-xs">
+                <div class="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-gray-400">2026-04-28</div>
+                  <div class="text-gray-700">数据分析平台 拖拽至「开发中」</div>
+                </div>
+              </div>
+              <div class="flex gap-2 text-xs">
+                <div class="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-gray-400">2026-04-27</div>
+                  <div class="text-gray-700">完成功能勾选，共5个功能</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 接入总览标题 -->
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm font-bold text-gray-900">接入总览</h4>
+          <div class="flex bg-gray-100 rounded-lg p-0.5 text-xs">
+            <div class="px-3 py-1 bg-white text-gray-900 rounded-md shadow-sm font-medium">看板</div>
+            <div class="px-3 py-1 text-gray-500">列表</div>
+          </div>
+        </div>
+
+        <!-- 流程步骤 -->
+        <div class="space-y-2 mb-4">
+          <div class="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+            <div class="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-white text-xs">✓</div>
+            <span class="text-sm text-green-700 line-through font-medium">① 配置控制中心添加版本</span>
+            <span class="ml-auto text-xs text-gray-400">运维</span>
+          </div>
+          <div class="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+            <div class="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-white text-xs">✓</div>
+            <span class="text-sm text-green-700 line-through font-medium">② 版本/功能绑定</span>
+            <span class="ml-auto text-xs text-gray-400">PM</span>
+          </div>
+          <div class="flex items-center gap-3 p-3 bg-white border border-indigo-200 bg-indigo-50 rounded-lg">
+            <div class="w-5 h-5 rounded border-2 border-indigo-400 flex items-center justify-center text-indigo-400">3</div>
+            <span class="text-sm text-indigo-700 font-medium">③ 权限开通</span>
+            <span class="ml-auto text-xs text-indigo-500">PM</span>
+          </div>
+        </div>
+
+        <!-- 看板区域 -->
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2 bg-gradient-to-r from-blue-50 to-white">
+            <span class="text-sm font-bold text-blue-600">⑥ 功能开发</span>
+            <span class="text-xs text-gray-400">共 3 个功能</span>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="kanban-col">
+                <div class="text-xs font-bold text-gray-400 uppercase mb-2">待开发 · 1</div>
+                <div class="kanban-card">
+                  <div class="font-semibold text-sm mb-1">礼包码系统</div>
+                  <span class="tag tag-blue text-xs">阶段1</span>
+                </div>
+              </div>
+              <div class="kanban-col">
+                <div class="text-xs font-bold text-blue-600 mb-2">开发中 · 2</div>
+                <div class="kanban-card">
+                  <div class="font-semibold text-sm mb-1">数据分析平台</div>
+                  <span class="tag tag-blue text-xs">阶段1</span>
+                </div>
+                <div class="kanban-card">
+                  <div class="font-semibold text-sm mb-1">运营活动管理</div>
+                  <span class="tag tag-blue text-xs">阶段1</span>
+                </div>
+              </div>
+              <div class="kanban-col">
+                <div class="text-xs font-bold text-gray-400 mb-2">联调中 · 0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤6：接入流程 -->
+  <div id="step6" class="guide-section mb-20">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="step-badge">6</span>
+      <h2>接入流程8步骤</h2>
+    </div>
+    <p class="desc">每个项目的接入流程都分为8个步骤，涵盖从配置到上线的完整生命周期。</p>
+
+    <div class="grid grid-cols-4 gap-3 mb-6">
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-bold">✓</span>
+          <span class="text-xs font-bold text-gray-400">步骤 1</span>
+        </div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">配置控制中心添加版本</div>
+        <span class="tag tag-amber text-xs">运维</span>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-bold">✓</span>
+          <span class="text-xs font-bold text-gray-400">步骤 2</span>
+        </div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">版本/功能绑定</div>
+        <span class="tag tag-purple text-xs">PM</span>
+      </div>
+      <div class="bg-white border border-indigo-200 rounded-xl p-4 bg-indigo-50">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">3</span>
+          <span class="text-xs font-bold text-gray-400">步骤 3</span>
+        </div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">权限开通</div>
+        <span class="tag tag-purple text-xs">PM</span>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-4 opacity-60">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-xs font-bold">4</span>
+          <span class="text-xs font-bold text-gray-400">步骤 4</span>
+        </div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">添加功能配置表</div>
+        <span class="tag tag-purple text-xs">PM</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-4 gap-3 mb-6">
+      <div class="bg-white border border-gray-200 rounded-xl p-4 opacity-60">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-xs font-bold">5</span>
+          <span class="text-xs font-bold text-gray-400">步骤 5</span>
+        </div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">开区服、配渠道</div>
+        <span class="tag tag-blue text-xs">运维/运营</span>
+      </div>
+      <div class="bg-white border border-blue-200 rounded-xl p-4 bg-blue-50">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">6</span>
+          <span class="text-xs font-bold text-gray-400">步骤 6</span>
+        </div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">功能开发</div>
+        <span class="tag tag-green text-xs">项目组</span>
+      </div>
+      <div class="bg-white border border-amber-200 rounded-xl p-4 bg-amber-50">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xs font-bold">7</span>
+          <span class="text-xs font-bold text-gray-400">步骤 7</span>
+        </div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">测试验收</div>
+        <span class="tag tag-green text-xs">项目组</span>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-4 opacity-60">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-xs font-bold">8</span>
+          <span class="text-xs font-bold text-gray-400">步骤 8</span>
+        </div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">满意度问卷</div>
+        <span class="tag tag-purple text-xs">PM/项目组</span>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <div class="text-sm font-bold text-indigo-700 mb-2">🔄 流程追踪方式</div>
+      <div class="text-sm text-gray-600">
+        <p>每个步骤左侧有复选框，完成后点击即可标记为已完成。步骤会自动记录到项目时间线中，方便追溯。</p>
+        <p class="mt-2">步骤 ⑥ 和 ⑦ 支持看板视图和列表视图切换，可以更直观地看到每个功能的状态。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤7：看板 -->
+  <div id="step7" class="guide-section mb-20">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="step-badge">7</span>
+      <h2>功能开发看板</h2>
+    </div>
+    <p class="desc">⑥功能开发和⑦测试验收两个阶段使用看板管理，可以拖拽卡片切换状态。</p>
+
+    <div class="mock-browser mb-6">
+      <div class="mock-header">
+        <div class="dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <span class="title">⑥ 功能开发 / ⑦ 测试验收</span>
+      </div>
+      <div class="mock-content" style="padding: 20px;">
+        <!-- ⑥开发阶段 -->
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-4">
+          <div class="px-5 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-blue-600">⑥ 功能开发</span>
+              <span class="px-2 py-0.5 bg-purple-100 text-purple-600 rounded text-xs">项目组</span>
+              <span class="text-xs text-gray-400 ml-auto">共 3 个功能</span>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="bg-gray-50 rounded-lg p-3">
+                <div class="text-xs font-bold text-gray-400 uppercase mb-2">待开发 · 1</div>
+                <div class="bg-white border border-gray-200 rounded-md p-2.5 mb-2 shadow-sm">
+                  <div class="font-semibold text-sm">礼包码系统</div>
+                  <div class="flex items-center gap-1 mt-1">
+                    <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">阶段1</span>
+                    <span class="text-gray-400 text-xs">开通权限</span>
+                  </div>
+                  <div class="text-xs text-gray-400 mt-1.5">⠿ ▼</div>
+                </div>
+                <div class="text-xs text-center text-gray-400 py-1 border border-dashed border-gray-300 rounded bg-gray-50/50">+ 拖拽到此处</div>
+              </div>
+              <div class="bg-blue-50/50 rounded-lg p-3">
+                <div class="text-xs font-bold text-blue-600 uppercase mb-2">开发中 · 1</div>
+                <div class="bg-white border border-indigo-300 rounded-md p-2.5 mb-2 shadow-sm ring-2 ring-indigo-100">
+                  <div class="font-semibold text-sm flex items-center gap-1">
+                    运营活动管理
+                    <span class="text-xs">💬</span>
+                  </div>
+                  <div class="flex items-center gap-1 mt-1">
+                    <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">阶段1</span>
+                    <span class="text-gray-400 text-xs">开通权限</span>
+                  </div>
+                  <div class="mt-1.5 pt-1.5 border-t border-gray-100 text-xs text-indigo-500">需要对接XX系统</div>
+                  <div class="text-xs text-gray-400 mt-1">⠿ ▲</div>
+                </div>
+                <div class="text-xs text-center text-gray-400 py-1 border border-dashed border-blue-200 rounded bg-blue-50/50">+ 拖拽到此处</div>
+              </div>
+              <div class="bg-purple-50/50 rounded-lg p-3">
+                <div class="text-xs font-bold text-purple-600 uppercase mb-2">联调中 · 1</div>
+                <div class="bg-white border border-purple-200 rounded-md p-2.5 shadow-sm">
+                  <div class="font-semibold text-sm">数据分析平台</div>
+                  <div class="flex items-center gap-1 mt-1">
+                    <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">阶段1</span>
+                    <span class="text-gray-400 text-xs">开通权限</span>
+                  </div>
+                  <div class="text-xs text-gray-400 mt-1.5">⠿ ▲</div>
+                </div>
+                <div class="text-xs text-center text-gray-400 py-1 border border-dashed border-purple-200 rounded bg-purple-50/50">+ 拖拽到此处</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⑦测试阶段 -->
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-3 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-white">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-amber-600">⑦ 测试验收</span>
+              <span class="px-2 py-0.5 bg-purple-100 text-purple-600 rounded text-xs">项目组</span>
+              <span class="text-xs text-gray-400 ml-auto">共 2 个功能</span>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="bg-amber-50/50 rounded-lg p-3">
+                <div class="text-xs font-bold text-amber-600 uppercase mb-2">测试中 · 1</div>
+                <div class="bg-white border border-amber-200 rounded-md p-2.5 shadow-sm">
+                  <div class="font-semibold text-sm">运营活动管理</div>
+                  <span class="text-xs text-gray-400">礼包码系统</span>
+                </div>
+              </div>
+              <div class="bg-orange-50/50 rounded-lg p-3">
+                <div class="text-xs font-bold text-orange-600 uppercase mb-2">待验收 · 1</div>
+                <div class="bg-white border border-orange-200 rounded-md p-2.5 shadow-sm">
+                  <div class="font-semibold text-sm">数据分析平台</div>
+                  <span class="text-xs text-gray-400">数据分析平台</span>
+                </div>
+              </div>
+              <div class="bg-green-50/50 rounded-lg p-3">
+                <div class="text-xs font-bold text-green-600 uppercase mb-2">已通过 · 0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="highlight-box">
+        <div class="text-sm font-bold text-indigo-700 mb-2">🖱 拖拽操作</div>
+        <div class="text-sm text-gray-600">点击卡片右上角的 ⠿ 图标，可以拖动功能卡片到不同的状态列。状态变更会自动保存并记录到时间线。</div>
+      </div>
+      <div class="highlight-box">
+        <div class="text-sm font-bold text-indigo-700 mb-2">📝 备注功能</div>
+        <div class="text-sm text-gray-600">点击卡片展开详情，可以填写对该功能的特殊要求。展开时显示 💬 图标提示。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤8：常见问题 -->
+  <div id="step8" class="guide-section mb-20">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="step-badge">8</span>
+      <h2>常见问题</h2>
+    </div>
+
+    <div class="space-y-4">
+      <details class="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+        <summary class="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50">
+          <span class="text-indigo-500 text-lg">Q</span>
+          <span class="font-medium text-gray-900">可以中途更换接入阶段吗？</span>
+          <span class="ml-auto text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="px-4 pb-4 pt-0 text-sm text-gray-600 border-t border-gray-100 pt-3">
+          可以。进入项目详情页，点击右上角的「编辑项目」，可以重新选择接入阶段。选择更高阶段会自动补充新功能，选择更低阶段不会删除已选功能。
+        </div>
+      </details>
+
+      <details class="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+        <summary class="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50">
+          <span class="text-indigo-500 text-lg">Q</span>
+          <span class="font-medium text-gray-900">项目暂停了怎么办？</span>
+          <span class="ml-auto text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="px-4 pb-4 pt-0 text-sm text-gray-600 border-t border-gray-100 pt-3">
+          在项目列表页，点击状态标签可以将项目标记为「暂停」。暂停的项目会自动移到列表底部，不影响数据。
+        </div>
+      </details>
+
+      <details class="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+        <summary class="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50">
+          <span class="text-indigo-500 text-lg">Q</span>
+          <span class="font-medium text-gray-900">功能库中没有需要的功能怎么办？</span>
+          <span class="ml-auto text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="px-4 pb-4 pt-0 text-sm text-gray-600 border-t border-gray-100 pt-3">
+          在新建项目时，点击底部的「添加自定义功能」，填写功能名称和接入方式即可。自定义功能会在项目创建时自动添加到功能库中。
+        </div>
+      </details>
+
+      <details class="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+        <summary class="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50">
+          <span class="text-indigo-500 text-lg">Q</span>
+          <span class="font-medium text-gray-900">接入流程步骤可以自定义吗？</span>
+          <span class="ml-auto text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="px-4 pb-4 pt-0 text-sm text-gray-600 border-t border-gray-100 pt-3">
+          可以。进入「管理后台」→「阶段规则配置」，可以查看和修改各阶段的功能配置和流程说明。
+        </div>
+      </details>
+
+      <details class="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+        <summary class="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50">
+          <span class="text-indigo-500 text-lg">Q</span>
+          <span class="font-medium text-gray-900">如何管理功能库和文档？</span>
+          <span class="ml-auto text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="px-4 pb-4 pt-0 text-sm text-gray-600 border-t border-gray-100 pt-3">
+          进入「管理后台」，点击「功能库配置」可以管理所有功能，支持拖拽排序。点击「文档管理」可以管理接入文档、使用手册等资料。
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- 底部 -->
+  <div class="text-center py-10 border-t border-gray-200">
+    <div class="text-lg font-bold text-gray-900 mb-2">开始使用</div>
+    <p class="text-gray-500 mb-6">如果你已经了解了以上内容，现在可以开始创建你的第一个接入项目了。</p>
+    <a href="https://39272ccc.game-access-hub.pages.dev" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+      <span>打开运营后台接入工作台</span>
+      <span>→</span>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

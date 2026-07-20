@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS documents (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title VARCHAR(200) NOT NULL,
+  feature_name VARCHAR(100),
   description TEXT,
   category VARCHAR(50) DEFAULT '接入文档',
   file_url TEXT,

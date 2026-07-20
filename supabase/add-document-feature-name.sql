@@ -1,0 +1,2 @@
+ALTER TABLE documents
+ADD COLUMN IF NOT EXISTS feature_name VARCHAR(100);
