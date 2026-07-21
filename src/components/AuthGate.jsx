@@ -68,6 +68,11 @@ export default function AuthGate({ children }) {
   }
 
   const roleKeys = state.roles.map(role => typeof role === 'string' ? role : role.role_key || role.key)
-  const value = { user: state.user, roles: roleKeys, isAdmin: roleKeys.includes('admin') || roleKeys.includes('owner') }
+  async function logout() {
+    await baas.auth.logout()
+    location.reload()
+  }
+
+  const value = { user: state.user, roles: roleKeys, isAdmin: roleKeys.includes('admin') || roleKeys.includes('owner'), logout }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

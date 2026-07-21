@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../lib/auth'
 
 function Icon({ name, className = 'h-4 w-4' }) {
   const common = { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }
@@ -13,6 +14,9 @@ function Icon({ name, className = 'h-4 w-4' }) {
 
 export default function Layout({ children }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { user, roles, logout } = useAuth()
+  const accountName = user?.display_name || user?.name || user?.email || String.fromCharCode(20225,19994,36134,21495)
+  const roleLabel = roles.length ? roles.join(' / ') : String.fromCharCode(26222,36890,25104,21592)
 
   const navLinks = [
     { to: '/', label: '项目管理', icon: 'briefcase' },
@@ -47,6 +51,15 @@ export default function Layout({ children }) {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2 border-l border-slate-200 pl-3" title="??????">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100 text-[12px] font-semibold text-primary-700">{accountName.slice(0, 1).toUpperCase()}</span>
+            <div className="max-w-[150px] leading-tight">
+              <div className="truncate text-[12px] font-medium text-slate-700">{accountName}</div>
+              <div className="truncate text-[10px] text-slate-400">已登录 ? {roleLabel}</div>
+              <button onClick={logout} className="text-[10px] text-slate-400 hover:text-red-600">退出</button>
+            </div>
+          </div>
+
           {/* 桌面端管理入口 */}
           <NavLink
             to="/admin"
