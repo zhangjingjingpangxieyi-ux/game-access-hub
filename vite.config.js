@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     base: env.VITE_APP_BASE || './',
+    build: {
+      rollupOptions: {
+        output: { inlineDynamicImports: true },
+      },
+    },
     server: {
       host: env.VITE_DEV_HOST || '0.0.0.0',
       port: Number(env.VITE_DEV_PORT || 8888),
