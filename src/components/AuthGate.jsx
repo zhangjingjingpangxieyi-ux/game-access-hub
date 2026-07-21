@@ -69,8 +69,8 @@ export default function AuthGate({ children }) {
 
   const roleKeys = state.roles.map(role => typeof role === 'string' ? role : role.role_key || role.key)
   async function logout() {
-    await baas.auth.logout()
-    location.reload()
+    try { await baas.auth.logout() } catch (error) { console.warn('Logout request failed, clearing local app session:', error) }
+    setState({ status: 'error', user: null, roles: [], error: '' })
   }
 
   const value = { user: state.user, roles: roleKeys, isAdmin: roleKeys.includes('admin') || roleKeys.includes('owner'), logout }
