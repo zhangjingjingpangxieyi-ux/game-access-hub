@@ -2,27 +2,12 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>&#28216;&#25103;&#25509;&#20837;Hub</title>
-    <script type="module">
-      (async () => {
-        const sdk = document.createElement("script");
-        sdk.src = import.meta.env.DEV
-          ? "/__glacier-sdk.js"
-          : "https://chat.q1.com/baas/glacier-baas-sdk.js";
-        document.head.appendChild(sdk);
-        await new Promise((resolve, reject) => {
-          sdk.onload = resolve;
-          sdk.onerror = reject;
-        });
-        await import("/src/main.jsx");
-      })().catch(error => {
-        console.error("Failed to bootstrap app", error);
-      });
-    </script>
+    <title>????Hub</title>
+    <script src="https://chat.q1.com/baas/glacier-baas-sdk.js"></script>
   </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
