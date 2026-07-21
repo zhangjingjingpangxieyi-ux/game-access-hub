@@ -126,7 +126,6 @@ INSERT INTO features (name, description, stage_id, recommendation, feature_type,
 -- 插入默认管理员密钥
 -- ============================================
 INSERT INTO system_config (key, value) VALUES
-('admin_key', 'gameops2026'),
 ('system_name', '游戏接入Hub');
 
 -- ============================================

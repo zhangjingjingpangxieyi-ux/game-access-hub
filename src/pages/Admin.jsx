@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/auth'
 import { getAccessMethodTone, getAccessResponsibility, getMaterialInfo, getPlatformContacts } from '../lib/featureMeta'
 
 const FEATURE_FILTER_DEFAULTS = {
@@ -23,8 +24,8 @@ const DOC_FILTER_DEFAULTS = {
 
 export default function Admin() {
   const navigate = useNavigate()
+  const { isAdmin } = useAuth()
   const [verified, setVerified] = useState(false)
-  const [key, setKey] = useState('')
   const [activeMenu, setActiveMenu] = useState('features')
   const [features, setFeatures] = useState([])
   const [stages, setStages] = useState([])
@@ -44,16 +45,9 @@ export default function Admin() {
     if (verified) fetchData()
   }, [verified, activeMenu])
 
-  async function handleVerify() {
-    const { data, error } = await supabase
-      .from('system_config')
-      .select('value')
-      .eq('key', 'admin_key')
-      .single()
-    if (error || !data) { alert('验证失败'); return }
-    if (data.value === key) { setVerified(true) }
-    else { alert('密钥错误') }
-  }
+  useEffect(() => {
+    if (isAdmin) setVerified(true)
+  }, [isAdmin])
 
   async function fetchData() {
     const [stageResult] = await Promise.all([
@@ -412,21 +406,9 @@ export default function Admin() {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/55">
         <div className="w-[420px] rounded-2xl bg-white p-7 shadow-2xl">
-          <h2 className="mb-2 text-lg font-bold text-slate-900">管理员验证</h2>
-          <p className="mb-5 text-[13px] leading-relaxed text-slate-500">请输入管理密钥以进入后台管理，可进行功能库配置、文档管理、进度状态维护等操作。</p>
-          <input
-            type="password"
-            placeholder="请输入管理密钥"
-            value={key}
-            onChange={e => setKey(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleVerify()}
-            className="mb-4 w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-[14px] outline-none focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-100"
-            autoFocus
-          />
-          <div className="flex justify-end gap-2.5">
-            <button onClick={() => navigate('/')} className="rounded-lg border border-slate-300 px-4 py-2 text-[13px] text-slate-600 hover:bg-slate-50">取消</button>
-            <button onClick={handleVerify} className="rounded-lg bg-primary-500 px-4 py-2 text-[13px] font-medium text-white hover:bg-primary-600">验证并进入</button>
-          </div>
+          <h2 className="mb-2 text-lg font-bold text-slate-900">无管理权限</h2>
+          <p className="mb-5 text-[13px] leading-relaxed text-slate-500">当前企业账号不是本应用的管理员，请联系应用负责人开通 admin 或 owner 角色后再进入。</p>
+          <div className="flex justify-end"><button onClick={() => navigate('/')} className="rounded-lg border border-slate-300 px-4 py-2 text-[13px] text-slate-600 hover:bg-slate-50">返回首页</button></div>
         </div>
       </div>
     )
